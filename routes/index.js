@@ -9,7 +9,7 @@ var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Welcome To Twitterverse!' });
+  res.render('index', { title: 'Brood - ARS\'17' });
 });
 
 module.exports = router;
@@ -42,13 +42,14 @@ function performSearch(req, res) {
   var score = 0;
   console.log("----------")
 
-    // grad 10000 tweets from today
+    // grad 10 tweets from today
     twitter.get('search/tweets', {q: '' + choices[0] + ' since:' + today.getFullYear() + '-' +
-      (today.getMonth() + 1) + '-' + today.getDate(), count:10000}, function(err, data) {
+      (today.getMonth() + 1) + '-' + today.getDate(), count:10}, function(err, data) {
         // perform sentiment analysis
         score = performAnalysis(data['statuses']);
         console.log("score:", score)
         console.log("choice:", choices[0])
+        console.log(err);
         //  determine winner
         highestScore = score;
         highestChoice = choices[0];
@@ -60,6 +61,10 @@ function performSearch(req, res) {
             console.log('wrote into results');
         });
       });
+
+    twitter.get('application/rate_limit_status', {resources: ['search']}, function(err, data) {
+      console.log(data['resources']['search']['/search/tweets']);
+    });
   // send response back to the server side; why the need for the timeout?
   setTimeout(function() { res.end(JSON.stringify({'score': highestScore, 'choice': highestChoice})) }, 5000);
 }
